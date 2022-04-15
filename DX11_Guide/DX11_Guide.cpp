@@ -2,10 +2,13 @@
 #include <Windows.h>
 #include <SDL_syswm.h>
 
+#include "Graphics.h"
+
 SDL_Window* window;
 char windowTitle[] = "SDL Window";
 int width = 960;
 int height = 540;
+Graphics gfx;
 
 int main(int argv, char** args)
 {
@@ -20,6 +23,8 @@ int main(int argv, char** args)
     SDL_VERSION(&sysWMInfo.version)
 	SDL_GetWindowWMInfo(window, &sysWMInfo);
 
+    gfx.Init(sysWMInfo.info.win.window, realWidth, realHeight);
+
     bool run = true;
     while (run)
     {
@@ -29,6 +34,8 @@ int main(int argv, char** args)
             if (event.type == SDL_QUIT)
                 run = false;
         }
+
+        gfx.Render();
 
     }
 
