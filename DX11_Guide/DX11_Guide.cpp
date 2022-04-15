@@ -1,4 +1,6 @@
 #include <SDL.h>
+#include <Windows.h>
+#include <SDL_syswm.h>
 
 SDL_Window* window;
 char windowTitle[] = "SDL Window";
@@ -10,6 +12,13 @@ int main(int argv, char** args)
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
     window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     SDL_SetWindowResizable(window, SDL_FALSE);
+
+    int realWidth, realHeight;
+    SDL_GetWindowSize(window, &realWidth, &realHeight);
+
+    SDL_SysWMinfo sysWMInfo;
+    SDL_VERSION(&sysWMInfo.version)
+	SDL_GetWindowWMInfo(window, &sysWMInfo);
 
     bool run = true;
     while (run)
