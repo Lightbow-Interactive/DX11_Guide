@@ -4,16 +4,17 @@
 #include <DirectXMath.h>
 
 #include "PixelShader.h"
+#include "Texture.h"
 #include "VertexBuffer.h"
 #include "VertexShader.h"
 
 struct Vertex
 {
     DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT3 color;
+    DirectX::XMFLOAT2 textureCoord;
 
-	Vertex(const DirectX::XMFLOAT3& _position, const DirectX::XMFLOAT3 _color)
-		: position(_position), color(_color)
+	Vertex(const DirectX::XMFLOAT3& _position, const DirectX::XMFLOAT2 _texCoord)
+		: position(_position), textureCoord(_texCoord)
 	{ }
 };
 
@@ -34,6 +35,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTarget;
 
     // Scene
+    Texture m_texture;
     VertexBuffer m_vertexBuffer;
 
     // Shaders

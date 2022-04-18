@@ -27,6 +27,8 @@ void Graphics::Render()
     m_vertexShader.Bind(m_deviceContext.Get());
     m_pixelShader.Bind(m_deviceContext.Get());
 
+    m_texture.Bind(m_deviceContext.Get());
+
     m_vertexBuffer.Bind(m_deviceContext.Get());
     m_deviceContext->Draw(m_vertexBuffer.GetSize(), 0);
 
@@ -88,22 +90,24 @@ void Graphics::LoadShaders()
     D3D11_INPUT_ELEMENT_DESC vsInputLayoutDesc[] =
     {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
+        {"TEXTURE_COORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
     m_vertexShader.Init(m_device.Get(), L"../bin/triangleVS.cso", vsInputLayoutDesc, ARRAYSIZE(vsInputLayoutDesc));
 
     // Pixel Shader
 
-    m_pixelShader.Init(m_device.Get(), L"../bin/solidColorPS.cso");
+    m_pixelShader.Init(m_device.Get(), L"../bin/texturedTrianglePS.cso");
 }
 
 void Graphics::SetupScene()
 {
     std::vector<Vertex> vertices; // vector instead of array because we need it later, when loading models
-    vertices.emplace_back(Vertex({ -0.5f, -0.5f, 1.f }, {1.f, 0.f, 0.f}));
-    vertices.emplace_back(Vertex({ 0.f, 0.5f, 1.f }, { 0.f, 1.f, 0.f }));
-    vertices.emplace_back(Vertex({ 0.5f, -0.5f, 1.f }, { 0.f, 0.f, 1.f }));
+    vertices.emplace_back(Vertex({ -0.5f, -0.5f, 1.f }, {0.f, 0.56f}));
+    vertices.emplace_back(Vertex({ 0.f, 0.5f, 1.f }, { 0.5f, 0.f}));
+    vertices.emplace_back(Vertex({ 0.5f, -0.5f, 1.f }, { 1.f, 0.56f}));
 
     m_vertexBuffer.Init(m_device.Get(), vertices);
+
+    m_texture.Init(m_device.Get(), L"../Content/grass_texture.jpg");
 }
