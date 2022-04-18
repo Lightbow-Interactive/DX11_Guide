@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <d3dcompiler.h>
+#include <vector>
 
 void Graphics::Init(HWND hWnd, int width, int height)
 {
@@ -22,15 +23,12 @@ void Graphics::Render()
     m_deviceContext->ClearRenderTargetView(m_renderTarget.Get(), clearColor);
 
     m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 
-    m_deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
-    m_deviceContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
+    m_vertexShader.Bind(m_deviceContext.Get());
+    m_pixelShader.Bind(m_deviceContext.Get());
 
-    UINT stride = sizeof(Vertex);
-    UINT offset = 0;
-    m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-    m_deviceContext->Draw(3, 0);
+    m_vertexBuffer.Bind(m_deviceContext.Get());
+    m_deviceContext->Draw(m_vertexBuffer.GetSize(), 0);
 
     m_swapChain->Present(false, NULL);
 }
@@ -93,41 +91,19 @@ void Graphics::LoadShaders()
         {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
-    HRESULT hr = D3DReadFileToBlob(L"../bin/triangleVS.cso", m_vertexShaderBuffer.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
-
-    hr = m_device->CreateVertexShader(m_vertexShaderBuffer->GetBufferPointer(), m_vertexShaderBuffer->GetBufferSize(), NULL, m_vertexShader.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
-
-    hr = m_device->CreateInputLayout(vsInputLayoutDesc, ARRAYSIZE(vsInputLayoutDesc), m_vertexShaderBuffer->GetBufferPointer(), m_vertexShaderBuffer->GetBufferSize(), m_inputLayout.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
+    m_vertexShader.Init(m_device.Get(), L"../bin/triangleVS.cso", vsInputLayoutDesc, ARRAYSIZE(vsInputLayoutDesc));
 
     // Pixel Shader
 
-    hr = D3DReadFileToBlob(L"../bin/solidColorPS.cso", m_pixelShaderBuffer.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
-
-    hr = m_device->CreatePixelShader(m_pixelShaderBuffer->GetBufferPointer(), m_pixelShaderBuffer->GetBufferSize(), NULL, m_pixelShader.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
+    m_pixelShader.Init(m_device.Get(), L"../bin/solidColorPS.cso");
 }
 
 void Graphics::SetupScene()
 {
-    Vertex vertices[] =
-    {
-        { { -0.5f, -0.5f, 1.f }, { 1.f, 0.f, 0.f } },
-        { { 0.f, 0.5f, 1.f }, { 0.f, 1.f, 0.f } },
-        { { 0.5f, -0.5f, 1.f }, { 0.f, 0.f, 1.f } }
-    };
+    std::vector<Vertex> vertices; // vector instead of array because we need it later, when loading models
+    vertices.emplace_back(Vertex({ -0.5f, -0.5f, 1.f }, {1.f, 0.f, 0.f}));
+    vertices.emplace_back(Vertex({ 0.f, 0.5f, 1.f }, { 0.f, 1.f, 0.f }));
+    vertices.emplace_back(Vertex({ 0.5f, -0.5f, 1.f }, { 0.f, 0.f, 1.f }));
 
-    auto vertexBufferDesc = CD3D11_BUFFER_DESC();
-    //vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT; <- no need to set this, as its CD3D11_DEFAULT (Press F12 on CD3D11_BUFFER_DESC to see defaults)
-    vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices); // size of the buffer
-    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // what's the buffer used for
-
-    D3D11_SUBRESOURCE_DATA vertexBufferData{};
-    vertexBufferData.pSysMem = vertices; // Set the buffer data
-
-    HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.GetAddressOf());
-    if (FAILED(hr)) throw std::exception();
+    m_vertexBuffer.Init(m_device.Get(), vertices);
 }

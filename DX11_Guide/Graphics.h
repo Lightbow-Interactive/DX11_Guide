@@ -1,9 +1,11 @@
 #pragma once 
 
 #include <Windows.h>
-#include <d3d11.h>
-#include <wrl/client.h>
 #include <DirectXMath.h>
+
+#include "PixelShader.h"
+#include "VertexBuffer.h"
+#include "VertexShader.h"
 
 struct Vertex
 {
@@ -32,16 +34,11 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTarget;
 
     // Scene
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
+    VertexBuffer m_vertexBuffer;
 
-    // Vertex Shader
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
-    Microsoft::WRL::ComPtr<ID3D10Blob> m_vertexShaderBuffer;
-    Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
-
-    // Pixel Shader
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
-    Microsoft::WRL::ComPtr<ID3D10Blob> m_pixelShaderBuffer;
+    // Shaders
+    VertexShader m_vertexShader;
+    PixelShader m_pixelShader;
 
     void InitD3D();
     void LoadShaders();
