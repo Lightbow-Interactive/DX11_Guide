@@ -3,18 +3,29 @@
 #include <exception>
 #include <d3dcompiler.h>
 #include <vector>
+#include <SDL.h>
 
-void Graphics::Init(HWND hWnd, int width, int height)
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl.h"
+#include "ImGui/imgui_impl_dx11.h"
+
+void Graphics::Init(HWND hWnd, SDL_Window* sdlWindow, int width, int height)
 {
     m_hWnd = hWnd;
     m_width = width;
     m_height = height;
+    m_sdlWindow = sdlWindow;
 
     InitD3D();
 
     LoadShaders();
 
     SetupScene();
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_ImplSDL2_InitForD3D(sdlWindow);
+    ImGui_ImplDX11_Init(m_device.Get(), m_deviceContext.Get());
 }
 
 void Graphics::Render()
@@ -32,7 +43,16 @@ void Graphics::Render()
     m_vertexBuffer.Bind(m_deviceContext.Get());
     m_deviceContext->Draw(m_vertexBuffer.GetSize(), 0);
 
+    RenderGui();
+
     m_swapChain->Present(false, NULL);
+}
+
+void Graphics::Shutdown()
+{
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void Graphics::InitD3D()
@@ -110,4 +130,43 @@ void Graphics::SetupScene()
     m_vertexBuffer.Init(m_device.Get(), vertices);
 
     m_texture.Init(m_device.Get(), L"../Content/grass_texture.jpg");
+}
+
+void Graphics::RenderGui()
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    // Menu Bar
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("Window"))
+        {
+            static bool selected = false;
+            ImGui::Selectable("selectable", &selected);
+
+            if (ImGui::MenuItem("menu item"))
+            {
+	            // Menu item clicked
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
+    // Window
+
+    ImGui::Begin("A Window");
+    {
+        ImGui::Text("This is a label");
+        ImGui::Button("This is a button");
+    }
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

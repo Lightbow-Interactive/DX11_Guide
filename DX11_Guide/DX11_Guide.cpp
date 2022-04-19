@@ -3,6 +3,8 @@
 #include <SDL_syswm.h>
 
 #include "Graphics.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl.h"
 
 SDL_Window* window;
 char windowTitle[] = "SDL Window";
@@ -23,7 +25,7 @@ int main(int argv, char** args)
     SDL_VERSION(&sysWMInfo.version)
 	SDL_GetWindowWMInfo(window, &sysWMInfo);
 
-    gfx.Init(sysWMInfo.info.win.window, realWidth, realHeight);
+    gfx.Init(sysWMInfo.info.win.window, window, realWidth, realHeight);
 
     bool run = true;
     while (run)
@@ -31,6 +33,8 @@ int main(int argv, char** args)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
             if (event.type == SDL_QUIT)
                 run = false;
         }
@@ -38,6 +42,8 @@ int main(int argv, char** args)
         gfx.Render();
 
     }
+
+    gfx.Shutdown();
 
     SDL_DestroyWindow(window);
     SDL_Quit();

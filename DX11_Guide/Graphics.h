@@ -18,16 +18,20 @@ struct Vertex
 	{ }
 };
 
+struct SDL_Window;
+
 class Graphics
 {
 public:
-    void Init(HWND hWnd, int width, int height);
+    void Init(HWND hWnd, SDL_Window* sdlWindow, int width, int height);
     void Render();
+    void Shutdown();
 
 private:
     int m_width = 0;
     int m_height = 0;
     HWND m_hWnd = NULL;
+    SDL_Window* m_sdlWindow = nullptr;
 
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
@@ -45,5 +49,6 @@ private:
     void InitD3D();
     void LoadShaders();
     void SetupScene();
+    void RenderGui();
 
 };
