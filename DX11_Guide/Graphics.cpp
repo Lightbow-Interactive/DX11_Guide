@@ -30,18 +30,28 @@ void Graphics::Init(HWND hWnd, SDL_Window* sdlWindow, int width, int height)
 
 void Graphics::Render()
 {
-    const float clearColor[] = { 0.f, 0.f, 0.f, 0.f };
+    const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
     m_deviceContext->ClearRenderTargetView(m_renderTarget.Get(), clearColor);
+    m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+    m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
     m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    m_deviceContext->RSSetState(m_rasterizerState.Get());
 
     m_vertexShader.Bind(m_deviceContext.Get());
     m_pixelShader.Bind(m_deviceContext.Get());
 
-    m_texture.Bind(m_deviceContext.Get());
+    //m_texture.Bind(m_deviceContext.Get());
 
-    m_vertexBuffer.Bind(m_deviceContext.Get());
-    m_deviceContext->Draw(m_vertexBuffer.GetSize(), 0);
+    //m_vertexBuffer.Bind(m_deviceContext.Get());
+    //m_deviceContext->Draw(m_vertexBuffer.GetSize(), 0);
+
+    DirectX::XMMATRIX viewProjection = m_camera.GetViewMatrix() * m_camera.GetProjectionMatrix();
+    DirectX::XMStoreFloat4x4(&m_globalCBuffer.Data.viewProjectionMatrix, viewProjection);
+    m_globalCBuffer.Bind(m_deviceContext.Get());
+
+    m_cube.Render(m_deviceContext.Get());
 
     RenderGui();
 
@@ -97,10 +107,35 @@ void Graphics::InitD3D()
     if (FAILED(hr)) throw std::exception();
     backBuffer->Release();                                                                  
 
-    m_deviceContext->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), nullptr);
+    m_deviceContext->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
 
     const auto vp = CD3D11_VIEWPORT(0.f, 0.f, static_cast<float>(m_width), static_cast<float>(m_height));
     m_deviceContext->RSSetViewports(1, &vp);
+
+    // Create the texture for the depth buffer
+    auto depthBufferTextureDesc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_D24_UNORM_S8_UINT, m_width, m_height, 1, 1);
+    depthBufferTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthBufferTextureDesc.SampleDesc.Count = 1; // Same as in swapchain desc
+    hr = m_device->CreateTexture2D(&depthBufferTextureDesc, 0, m_depthStencilBuffer.GetAddressOf());
+    if (FAILED(hr)) throw std::exception();
+
+    // Create the depth stencil view
+    hr = m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), 0, m_depthStencilView.GetAddressOf());
+    if (FAILED(hr)) throw std::exception();
+
+    // Create the stencil state
+    auto depthStencilDesc = CD3D11_DEPTH_STENCIL_DESC(D3D11_DEFAULT);
+    depthStencilDesc.DepthEnable = true; // Enable depth
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    hr = m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
+    if (FAILED(hr)) throw std::exception();
+
+    D3D11_RASTERIZER_DESC rasterizerDesc{};
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode = D3D11_CULL_BACK; // Cull the back face
+    hr = m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf());
+    if (FAILED(hr)) throw std::exception();
 }
 
 void Graphics::LoadShaders()
@@ -110,26 +145,33 @@ void Graphics::LoadShaders()
     D3D11_INPUT_ELEMENT_DESC vsInputLayoutDesc[] =
     {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"TEXTURE_COORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
-    m_vertexShader.Init(m_device.Get(), L"../bin/triangleVS.cso", vsInputLayoutDesc, ARRAYSIZE(vsInputLayoutDesc));
+    m_vertexShader.Init(m_device.Get(), L"../bin/3dVS.cso", vsInputLayoutDesc, ARRAYSIZE(vsInputLayoutDesc));
 
     // Pixel Shader
 
-    m_pixelShader.Init(m_device.Get(), L"../bin/texturedTrianglePS.cso");
+    m_pixelShader.Init(m_device.Get(), L"../bin/solidColorPS.cso");
 }
 
 void Graphics::SetupScene()
 {
-    std::vector<Vertex> vertices; // vector instead of array because we need it later, when loading models
+    /*std::vector<Vertex> vertices; // vector instead of array because we need it later, when loading models
     vertices.emplace_back(Vertex({ -0.5f, -0.5f, 1.f }, {0.f, 0.56f}));
     vertices.emplace_back(Vertex({ 0.f, 0.5f, 1.f }, { 0.5f, 0.f}));
     vertices.emplace_back(Vertex({ 0.5f, -0.5f, 1.f }, { 1.f, 0.56f}));
 
     m_vertexBuffer.Init(m_device.Get(), vertices);
 
-    m_texture.Init(m_device.Get(), L"../Content/grass_texture.jpg");
+    m_texture.Init(m_device.Get(), L"../Content/grass_texture.jpg");*/
+
+    m_camera.SetProjection(90.f, static_cast<float>(m_width) / static_cast<float>(m_height), 1.f, 10000.f);
+    m_camera.UpdateMatrix();
+
+    m_globalCBuffer.Init(BUFFER_VS, 0, m_device.Get());
+
+    m_cube.Init(m_device.Get());
 }
 
 void Graphics::RenderGui()
@@ -140,7 +182,7 @@ void Graphics::RenderGui()
 
     // Menu Bar
 
-    if (ImGui::BeginMainMenuBar())
+    /*if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("Window"))
         {
@@ -165,8 +207,22 @@ void Graphics::RenderGui()
         ImGui::Text("This is a label");
         ImGui::Button("This is a button");
     }
-    ImGui::End();
+    ImGui::End();*/
 
+    ImGui::Begin("Camera Controls");
+    {
+        DirectX::XMFLOAT3 camPos;
+        DirectX::XMStoreFloat3(&camPos, m_camera.m_position);
+        ImGui::DragFloat3("Position", &camPos.x, 0.01f);
+        m_camera.SetPosition(camPos);
+
+        DirectX::XMFLOAT3 camRotation;
+        DirectX::XMStoreFloat3(&camRotation, m_camera.m_rotation);
+        ImGui::DragFloat3("Rotation", &camRotation.x, 0.01f);
+        m_camera.SetRotation(camRotation);
+    }
+    ImGui::End();
+    
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

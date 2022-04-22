@@ -1,6 +1,7 @@
 struct PS_INPUT
 {
     float4 position : SV_POSITION;
+    float4 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
 };
 
