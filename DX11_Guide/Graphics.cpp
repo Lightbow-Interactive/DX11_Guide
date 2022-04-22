@@ -1,5 +1,6 @@
 #include "Graphics.h"
 
+#include <ctime>
 #include <exception>
 #include <d3dcompiler.h>
 #include <vector>
@@ -51,7 +52,10 @@ void Graphics::Render()
     DirectX::XMStoreFloat4x4(&m_globalCBuffer.Data.viewProjectionMatrix, viewProjection);
     m_globalCBuffer.Bind(m_deviceContext.Get());
 
-    m_cube.Render(m_deviceContext.Get());
+    for (int i = 0; i < m_cubes.size(); ++i)
+    {
+        m_cubes[i]->Render(m_deviceContext.Get());
+    }
 
     RenderGui();
 
@@ -127,7 +131,7 @@ void Graphics::InitD3D()
     auto depthStencilDesc = CD3D11_DEPTH_STENCIL_DESC(D3D11_DEFAULT);
     depthStencilDesc.DepthEnable = true; // Enable depth
     depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
     hr = m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
     if (FAILED(hr)) throw std::exception();
 
@@ -171,7 +175,16 @@ void Graphics::SetupScene()
 
     m_globalCBuffer.Init(BUFFER_VS, 0, m_device.Get());
 
-    m_cube.Init(m_device.Get());
+    srand(time(0));
+
+    for (int i = 0; i < 10; ++i)
+    {
+        Cube* cube = new Cube();
+        cube->Init(m_device.Get());
+        cube->SetPosition(rand() % 10 + 1, rand() % 10 + 1, rand() % 10 + 1);
+        cube->SetRotation(rand() % 360 + 1, rand() % 360 + 1, rand() % 360 + 1);
+        m_cubes.push_back(cube);
+    }
 }
 
 void Graphics::RenderGui()

@@ -57,7 +57,7 @@ private:
     //VertexBuffer m_vertexBuffer;
 
     Camera m_camera;
-    Cube m_cube;
+    std::vector<Cube*> m_cubes;
     ConstantBuffer<GlobalCBuffer> m_globalCBuffer;
 
     // Depth
