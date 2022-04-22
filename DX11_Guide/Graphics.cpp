@@ -64,6 +64,11 @@ void Graphics::Render()
 
 void Graphics::Shutdown()
 {
+	for (int i = 0; i < m_cubes.size(); ++i)
+	{
+        delete m_cubes[i];
+	}
+
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -111,11 +116,6 @@ void Graphics::InitD3D()
     if (FAILED(hr)) throw std::exception();
     backBuffer->Release();                                                                  
 
-    m_deviceContext->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
-
-    const auto vp = CD3D11_VIEWPORT(0.f, 0.f, static_cast<float>(m_width), static_cast<float>(m_height));
-    m_deviceContext->RSSetViewports(1, &vp);
-
     // Create the texture for the depth buffer
     auto depthBufferTextureDesc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_D24_UNORM_S8_UINT, m_width, m_height, 1, 1);
     depthBufferTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -128,7 +128,7 @@ void Graphics::InitD3D()
     if (FAILED(hr)) throw std::exception();
 
     // Create the stencil state
-    auto depthStencilDesc = CD3D11_DEPTH_STENCIL_DESC(D3D11_DEFAULT);
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
     depthStencilDesc.DepthEnable = true; // Enable depth
     depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
@@ -140,6 +140,11 @@ void Graphics::InitD3D()
     rasterizerDesc.CullMode = D3D11_CULL_BACK; // Cull the back face
     hr = m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf());
     if (FAILED(hr)) throw std::exception();
+
+    m_deviceContext->OMSetRenderTargets(1, m_renderTarget.GetAddressOf(), m_depthStencilView.Get());
+
+    const auto vp = CD3D11_VIEWPORT(0.f, 0.f, static_cast<float>(m_width), static_cast<float>(m_height));
+    m_deviceContext->RSSetViewports(1, &vp);
 }
 
 void Graphics::LoadShaders()
