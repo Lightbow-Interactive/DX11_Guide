@@ -12,11 +12,40 @@ enum EBufferType { BUFFER_VS, BUFFER_PS, BUFFER_NULL };
 struct GlobalCBuffer
 {
     DirectX::XMFLOAT4X4 viewProjectionMatrix;
+    DirectX::XMFLOAT3 eyePos;
+    float padding;
 };
 
 struct PerObjectCBuffer
 {
     DirectX::XMFLOAT4X4 objectWorldMatrix;
+};
+
+struct GlobalLightsCBuffer
+{
+    // Ambient Light
+    float ambientLightFactor = 0.1f;
+    DirectX::XMFLOAT3 padding;
+
+    // Directional Light
+    DirectX::XMFLOAT3 directionalLightColor = { 1.f, 1.f, 1.f };
+    float directionalLightStrength;
+    DirectX::XMFLOAT3 directionalLightDirection;
+    float padding2;
+
+    // Point Light
+    DirectX::XMFLOAT3 pointLightColor = { 1.f, 1.f, 1.f };
+    float pointLightStrength;
+    DirectX::XMFLOAT3 pointLightPosition;
+    float padding3;
+
+    // Spot Light
+    DirectX::XMFLOAT3 spotLightColor = { 1.f, 1.f, 1.f };
+    float spotLightStrength;
+    DirectX::XMFLOAT3 spotLightDirection;
+    float spotLightCutoff = 90.f;
+    DirectX::XMFLOAT3 spotLightPosition;
+    float padding4;
 };
 
 template<typename T>

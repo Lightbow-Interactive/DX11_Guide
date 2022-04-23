@@ -50,7 +50,10 @@ void Graphics::Render()
 
     DirectX::XMMATRIX viewProjection = m_camera.GetViewMatrix() * m_camera.GetProjectionMatrix();
     DirectX::XMStoreFloat4x4(&m_globalCBuffer.Data.viewProjectionMatrix, viewProjection);
+    m_globalCBuffer.Data.eyePos = m_camera.GetPosition();
     m_globalCBuffer.Bind(m_deviceContext.Get());
+
+    m_lightsCBuffer.Bind(m_deviceContext.Get());
 
     for (int i = 0; i < m_cubes.size(); ++i)
     {
@@ -154,6 +157,7 @@ void Graphics::LoadShaders()
     D3D11_INPUT_ELEMENT_DESC vsInputLayoutDesc[] =
     {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
@@ -161,7 +165,7 @@ void Graphics::LoadShaders()
 
     // Pixel Shader
 
-    m_pixelShader.Init(m_device.Get(), L"../bin/solidColorPS.cso");
+    m_pixelShader.Init(m_device.Get(), L"../bin/solidColorPhong.cso");
 }
 
 void Graphics::SetupScene()
@@ -179,6 +183,7 @@ void Graphics::SetupScene()
     m_camera.UpdateMatrix();
 
     m_globalCBuffer.Init(BUFFER_VS, 0, m_device.Get());
+    m_lightsCBuffer.Init(BUFFER_PS, 0, m_device.Get());
 
     srand(time(0));
 
@@ -240,7 +245,39 @@ void Graphics::RenderGui()
         m_camera.SetRotation(camRotation);
     }
     ImGui::End();
-    
+
+    ImGui::Begin("Ambient Light");
+    {
+        ImGui::DragFloat("Ambient Light Factor", &m_lightsCBuffer.Data.ambientLightFactor, 0.01f, 0.f, 1.f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Directional Light");
+    {
+        ImGui::DragFloat3("Directional Light Color", &m_lightsCBuffer.Data.directionalLightColor.x, 0.01f, 0.f, 1.f);
+        ImGui::DragFloat3("Directional Light Direction", &m_lightsCBuffer.Data.directionalLightDirection.x, 0.01f);
+        ImGui::DragFloat("Directional Light Strength", &m_lightsCBuffer.Data.directionalLightStrength, 0.01f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Point Light");
+    {
+        ImGui::DragFloat3("Point Light Color", &m_lightsCBuffer.Data.pointLightColor.x, 0.01f, 0.f, 1.f);
+        ImGui::DragFloat3("Point Light Position", &m_lightsCBuffer.Data.pointLightPosition.x, 0.01f);
+        ImGui::DragFloat("Point Light Strength", &m_lightsCBuffer.Data.pointLightStrength, 0.01f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Spot Light");
+    {
+        ImGui::DragFloat3("Spot Light Color", &m_lightsCBuffer.Data.spotLightColor.x, 0.01f, 0.f, 1.f);
+        ImGui::DragFloat3("Spot Light Position", &m_lightsCBuffer.Data.spotLightPosition.x, 0.01f);
+        ImGui::DragFloat("Spot Light Strength", &m_lightsCBuffer.Data.spotLightStrength, 0.01f);
+        ImGui::DragFloat3("Spot Light Direction", &m_lightsCBuffer.Data.spotLightDirection.x, 0.01f);
+        ImGui::DragFloat("Spot Light Cutoff", &m_lightsCBuffer.Data.spotLightCutoff, 0.01f);
+    }
+    ImGui::End();
+
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

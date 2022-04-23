@@ -6,15 +6,63 @@ void Cube::Init(ID3D11Device* device)
 {
 	std::vector<Vertex> vertices =
 	{
-		/*0*/ Vertex({-1.f, -1.f, -1.f}, {1.f, 0.f, 0.f}),
-		/*1*/ Vertex({1.f, -1.f, -1.f}, {0.f, 1.f, 0.f}),
-		/*2*/ Vertex({1.f, 1.f, -1.f}, {0.f, 0.f, 1.f}),
-		/*3*/ Vertex({-1.f, 1.f, -1.f}, {1.f, 0.f, 0.f}),
+		//*0*/ Vertex({-1.f, -1.f, -1.f}, {1.f, 0.f, 0.f}),
+		//*1*/ Vertex({1.f, -1.f, -1.f}, {0.f, 1.f, 0.f}),
+		//*2*/ Vertex({1.f, 1.f, -1.f}, {0.f, 0.f, 1.f}),
+		//*3*/ Vertex({-1.f, 1.f, -1.f}, {1.f, 0.f, 0.f}),
 
-		/*4*/ Vertex({-1.f, -1.f, 1.f}, {0.f, 1.f, 0.f}),
-		/*5*/ Vertex({1.f, -1.f, 1.f}, {0.f, 0.f, 1.f}),
-		/*6*/ Vertex({1.f, 1.f, 1.f}, {1.f, 0.f, 0.f}),
-		/*7*/ Vertex({-1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}),
+		//*4*/ Vertex({-1.f, -1.f, 1.f}, {0.f, 1.f, 0.f}),
+		//*5*/ Vertex({1.f, -1.f, 1.f}, {0.f, 0.f, 1.f}),
+		//*6*/ Vertex({1.f, 1.f, 1.f}, {1.f, 0.f, 0.f}),
+		//*7*/ Vertex({-1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}),
+
+		// Front
+		Vertex({-1.f, -1.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, 1.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 0.f, 0.f}),
+		Vertex({1.f, -1.f, -1.f}, {0.f, 0.f, -1.f}, {0.f, 1.f, 0.f}),
+		Vertex({1.f, -1.f, -1.f}, {0.f, 0.f, -1.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, 1.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 0.f, 0.f}),
+		Vertex({1.f, 1.f, -1.f}, {0.f, 0.f, -1.f}, {0.f, 0.f, 1.f}),
+
+		// Right
+		Vertex({1.f, -1.f, -1.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({1.f, 1.f, -1.f}, {1.f, 0.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, -1.f, 1.f}, {1.f, 0.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, -1.f, 1.f}, {1.f, 0.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, 1.f, -1.f}, {1.f, 0.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, 1.f, 1.f}, {1.f, 0.f, 0.f}, {1.f, 0.f, 0.f}),
+
+		// Back
+		Vertex({1.f, -1.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, 1.f, 1.f}, {0.f, 0.f, 1.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, -1.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, -1.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}),
+		Vertex({1.f, 1.f, 1.f}, {0.f, 0.f, 1.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, 1.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}),
+
+		// Left
+		Vertex({-1.f, -1.f, 1.f}, {-1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, 1.f, 1.f}, {-1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, -1.f, -1.f}, {-1.f, 0.f, 0.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, -1.f, -1.f}, {-1.f, 0.f, 0.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, 1.f, 1.f}, {-1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, 1.f, -1.f}, {-1.f, 0.f, 0.f}, {1.f, 0.f, 0.f}),
+
+		// Top
+		Vertex({-1.f, 1.f, -1.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}),
+		Vertex({-1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({1.f, 1.f, -1.f}, {0.f, 1.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, 1.f, -1.f}, {0.f, 1.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({-1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}),
+
+		// Bottom
+		Vertex({-1.f, -1.f, 1.f}, {0.f, -1.f, 0.f}, {0.f, 1.f, 0.f}),
+		Vertex({-1.f, -1.f, -1.f}, {0.f, -1.f, 0.f}, {1.f, 0.f, 0.f}),
+		Vertex({1.f, -1.f, 1.f}, {0.f, -1.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({1.f, -1.f, 1.f}, {0.f, -1.f, 0.f}, {0.f, 0.f, 1.f}),
+		Vertex({-1.f, -1.f, -1.f}, {0.f, -1.f, 0.f}, {1.f, 0.f, 0.f}),
+		Vertex({1.f, -1.f, -1.f}, {0.f, -1.f, 0.f}, {0.f, 1.f, 0.f})
 	};
 
 	std::vector<UINT> indices =
@@ -45,10 +93,11 @@ void Cube::Init(ID3D11Device* device)
 void Cube::Render(ID3D11DeviceContext* deviceContext)
 {
 	m_cubeVertices.Bind(deviceContext);
-	m_cubeIndices.Bind(deviceContext);
+	//m_cubeIndices.Bind(deviceContext);
 
 	DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
 	m_cubeConstantBuffer.Bind(deviceContext);
 
-	deviceContext->DrawIndexed(m_cubeIndices.GetSize(), 0, 0);
+	//deviceContext->DrawIndexed(m_cubeIndices.GetSize(), 0, 0);
+	deviceContext->Draw(m_cubeVertices.GetSize(), 0);
 }

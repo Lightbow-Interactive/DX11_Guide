@@ -137,6 +137,7 @@
     <FxCompile Include="solidColorPS.hlsl" />
     <FxCompile Include="texturedTrianglePS.hlsl" />
     <FxCompile Include="3dVS.hlsl" />
+    <FxCompile Include="solidColorPhong.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -23,10 +23,11 @@
 struct Vertex
 {
     DirectX::XMFLOAT3 position;
+    DirectX::XMFLOAT3 normal;
     DirectX::XMFLOAT3 color;
 
-    Vertex(const DirectX::XMFLOAT3& _position, const DirectX::XMFLOAT3 _color)
-        : position(_position), color(_color)
+    Vertex(const DirectX::XMFLOAT3& _position, const DirectX::XMFLOAT3 _normal, const DirectX::XMFLOAT3 _color)
+        : position(_position), normal(_normal), color(_color)
     { }
 };
 
@@ -59,6 +60,7 @@ private:
     Camera m_camera;
     std::vector<Cube*> m_cubes;
     ConstantBuffer<GlobalCBuffer> m_globalCBuffer;
+    ConstantBuffer<GlobalLightsCBuffer> m_lightsCBuffer;
 
     // Depth
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
