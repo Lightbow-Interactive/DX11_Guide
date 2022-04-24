@@ -93,6 +93,15 @@ void Cube::Init(ID3D11Device* device)
 	m_stencilMask.Init(device, MODE_MASK);
 	m_stencilWrite.Init(device, MODE_WRITE);
 	m_stencilNone.Init(device, MODE_NONE);
+
+	m_pass1Bindables.push_back(&m_cubeVertices);
+	m_pass1Bindables.push_back(&m_normalPS);
+	m_pass1Bindables.push_back(&m_stencilWrite);
+	m_pass1Bindables.push_back(&m_cubeConstantBuffer);
+
+	m_pass2Bindables.push_back(&m_cubeConstantBuffer);
+	m_pass2Bindables.push_back(&m_stencilMask);
+	m_pass2Bindables.push_back(&m_whitePS);
 }
 
 void Cube::Render(ID3D11DeviceContext* deviceContext, int passIndex)
@@ -100,11 +109,8 @@ void Cube::Render(ID3D11DeviceContext* deviceContext, int passIndex)
 	if (passIndex == 0)
 	{
 		// Draw the cube normal
-		m_normalPS.Bind(deviceContext);
-		m_cubeVertices.Bind(deviceContext);
-		m_stencilWrite.Bind(deviceContext);
 		DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
-		m_cubeConstantBuffer.Bind(deviceContext);
+		IBindable::BindBindables(deviceContext, m_pass1Bindables);
 		deviceContext->Draw(m_cubeVertices.GetSize(), 0);
 	}
 	
@@ -114,9 +120,7 @@ void Cube::Render(ID3D11DeviceContext* deviceContext, int passIndex)
 		DirectX::XMFLOAT3 scale = m_scale;
 		SetScale(m_scale.x + 0.02f, m_scale.y + 0.02f, m_scale.z + 0.02f);
 		DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
-		m_cubeConstantBuffer.Bind(deviceContext);
-		m_stencilMask.Bind(deviceContext);
-		m_whitePS.Bind(deviceContext);
+		IBindable::BindBindables(deviceContext, m_pass2Bindables);
 		deviceContext->Draw(m_cubeVertices.GetSize(), 0);
 		SetScale(scale);
 	}

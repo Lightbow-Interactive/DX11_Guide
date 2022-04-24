@@ -24,4 +24,7 @@ private:
 	Stencil m_stencilWrite;
 	Stencil m_stencilMask;
 
+	std::vector<IBindable*> m_pass1Bindables;
+	std::vector<IBindable*> m_pass2Bindables;
+
 };
