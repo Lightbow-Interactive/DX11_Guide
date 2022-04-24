@@ -99,6 +99,7 @@ void Cube::Init(ID3D11Device* device)
 	m_pass1Bindables.push_back(&m_stencilWrite);
 	m_pass1Bindables.push_back(&m_cubeConstantBuffer);
 
+	m_pass2Bindables.push_back(&m_cubeVertices);
 	m_pass2Bindables.push_back(&m_cubeConstantBuffer);
 	m_pass2Bindables.push_back(&m_stencilMask);
 	m_pass2Bindables.push_back(&m_whitePS);
