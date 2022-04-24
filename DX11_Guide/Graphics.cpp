@@ -55,9 +55,16 @@ void Graphics::Render()
 
     m_lightsCBuffer.Bind(m_deviceContext.Get());
 
+    // Render Cubes
     for (int i = 0; i < m_cubes.size(); ++i)
     {
-        m_cubes[i]->Render(m_deviceContext.Get());
+        m_cubes[i]->Render(m_deviceContext.Get(), 0);
+    }
+
+    // Render Cubes Outline
+    for (int i = 0; i < m_cubes.size(); ++i)
+    {
+        m_cubes[i]->Render(m_deviceContext.Get(), 1);
     }
 
     RenderGui();

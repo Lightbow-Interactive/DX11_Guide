@@ -88,16 +88,36 @@ void Cube::Init(ID3D11Device* device)
 	m_cubeVertices.Init(device, vertices);
 	m_cubeIndices.Init(device, indices);
 	m_cubeConstantBuffer.Init(BUFFER_VS, 1, device);
+	m_whitePS.Init(device, L"../bin/solidColorPS.cso");
+	m_normalPS.Init(device, L"../bin/solidColorPhong.cso");
+	m_stencilMask.Init(device, MODE_MASK);
+	m_stencilWrite.Init(device, MODE_WRITE);
+	m_stencilNone.Init(device, MODE_NONE);
 }
 
-void Cube::Render(ID3D11DeviceContext* deviceContext)
+void Cube::Render(ID3D11DeviceContext* deviceContext, int passIndex)
 {
-	m_cubeVertices.Bind(deviceContext);
-	//m_cubeIndices.Bind(deviceContext);
-
-	DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
-	m_cubeConstantBuffer.Bind(deviceContext);
-
-	//deviceContext->DrawIndexed(m_cubeIndices.GetSize(), 0, 0);
-	deviceContext->Draw(m_cubeVertices.GetSize(), 0);
+	if (passIndex == 0)
+	{
+		// Draw the cube normal
+		m_normalPS.Bind(deviceContext);
+		m_cubeVertices.Bind(deviceContext);
+		m_stencilWrite.Bind(deviceContext);
+		DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
+		m_cubeConstantBuffer.Bind(deviceContext);
+		deviceContext->Draw(m_cubeVertices.GetSize(), 0);
+	}
+	
+	if (passIndex == 1)
+	{
+		// Draw a bigger version ob the cube with solid color and without depth and with stencil
+		DirectX::XMFLOAT3 scale = m_scale;
+		SetScale(m_scale.x + 0.02f, m_scale.y + 0.02f, m_scale.z + 0.02f);
+		DirectX::XMStoreFloat4x4(&m_cubeConstantBuffer.Data.objectWorldMatrix, m_objectWorldMatrix);
+		m_cubeConstantBuffer.Bind(deviceContext);
+		m_stencilMask.Bind(deviceContext);
+		m_whitePS.Bind(deviceContext);
+		deviceContext->Draw(m_cubeVertices.GetSize(), 0);
+		SetScale(scale);
+	}
 }
